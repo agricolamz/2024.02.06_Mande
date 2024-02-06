@@ -20,6 +20,7 @@ format:
        \setbeamertemplate{footline}[page number]
 urlcolor: teal
 citecolor: teal
+echo: false
 bibliography: bibliography.bib
 editor_options: 
   chunk_output_type: console
@@ -33,16 +34,112 @@ df <- readxl::read_xlsx("data/data.xlsx")
 theme_set(theme_minimal()+theme(text = element_text(size = 14)))
 ```
 
-
-# Introduction
-
 # On Mande languages
+
+## Mande languages
+
+- Word order: S Aux O V X
+    - Aux is an auxiliary; it expresses not only TAMP categories but in some Mande languages also indexes the subject’s person and number; variable distribution with lexical subjects
+    - X stands for all indirect objects and adjuncts, which are typically expressed by postpositional phrases 
+- tonal and fusional morphology, otherwise mainly isolating
+- mainly postpositions; prepositions are rare
+
+## Genetic classification of Mande by [@valentin09]
+
+```{r}
+#| out-width: 105%
+knitr::include_graphics("images/04_genetic_classification.png")
+```
+
+## Mande languages
+
+```{r}
+#| eval: false
+library(lingtypology)
+tibble(lang = lang.aff("Mande,"), 
+       aff = aff.lang(lang)) |> 
+  mutate(aff = str_remove_all(aff, "^Mande, "),
+         branch = str_extract(aff, ".*?, "),
+         aff = str_remove(aff, branch),
+         subbranch = str_extract(aff, ".*?,"),
+         subbranch = ifelse(is.na(subbranch), branch, subbranch),
+         subbranch = str_remove(subbranch, ","),
+         branch = str_remove(branch, ","),
+         subbranch = str_squish(subbranch),
+         branch = str_squish(branch),
+         size = ifelse(lang %in% c("Guro", "Dan", "Guinea Kpelle", "Loma (Liberia)", "Bambara", "Mann"), 6, 3),
+         label = ifelse(lang %in% c("Guro", "Dan", "Guinea Kpelle", "Loma (Liberia)", "Bambara", "Mann"), lang, ""),
+         label = case_when(label == "Bambara" ~ "Bamana",
+                           str_detect(label, "Loma") ~ "Looma",
+                           str_detect(label, "Dan") ~ "Dan Gweetaa",
+                           str_detect(label, "Kpelle") ~ "Kpelle",
+                           str_detect(label, "Mann") ~ "Mano",
+                           TRUE ~ label)) ->
+  mande_languages
+
+map.feature(mande_languages$lang,
+            mande_languages$branch,
+            tile = "Esri.WorldGrayCanvas",
+            minimap = TRUE)
+
+map.feature(mande_languages$lang,
+            mande_languages$subbranch,
+            tile = "Esri.WorldGrayCanvas",
+            minimap = TRUE)
+
+map.feature(mande_languages$lang,
+            mande_languages$subbranch,
+            tile = "Esri.WorldGrayCanvas",
+            minimap = TRUE,
+            width = mande_languages$size,
+            label = mande_languages$label,
+            label.hide = FALSE)
+```
+
+```{r}
+#| out-width: 100%
+knitr::include_graphics("images/01_mande_branches.png")
+```
+
+## Mande languages
+
+```{r}
+#| out-width: 100%
+knitr::include_graphics("images/02_mande_subbranches.png")
+```
+
+## Mande languages
+
+```{r}
+#| out-width: 90%
+knitr::include_graphics("images/03_our_languages.png")
+```
+
+## Mande languages
+
+\small
+
+```{r}
+tribble(
+  ~Language,  ~Group, ~Speakers,
+  "Looma, Loma, Toma", "Southwestern", "261 000 in Guinea",
+  "Kono", "Southwestern", "99 300 in Guinea",
+  "Kpelle, Guerzé", "Southwestern", "497 000 in Guinea",
+  "Mano, Maa", "Southern", "86 900 in Guinea",
+  "Dan-Gweetaa, Eastern Dan, Yakuba", "Southern", "650 000 in Ivory Coast",
+  "Guro", "Southern", "500 000 in Ivory Coast",
+  "Bamana, Bambara", "Manding", "ca. 4 millions L1 speakers in
+Mali"
+)
+```
+
+Guinean Mano (Southern Mande) is in intense contact with and substantially influenced by Guinean Kpelle (Southwestern Mande) in lexicon, morphosyntax (pronominal paradigms), reflexive marking, and phonology, in particular consonant assimilation patterns [@konoshenko2015; @khachaturyan18; @khachaturyan19; @khachaturyan24]
 
 # Data collection and coding
 
 ## Data source
 
-Data were collected with the help of the [BivalTyp](https://bivaltyp.info/) [@saj20] questionnaire focusing on bivalent predicates and containing 130 stimulus sentences. The Russian variant of the questionnaire, which we then translated into French and used in our fieldwork.
+Data were collected with the help of the [BivalTyp](https://bivaltyp.info/) [@say20] questionnaire focusing on bivalent predicates and containing 130 stimulus sentences. The Russian variant of the questionnaire, which we then translated into French and used in our fieldwork.
 
 . . .
 
@@ -71,9 +168,341 @@ df |>
   rename(`N stimuli` = n)
 ```
 
+## Data annotation: Looma, 101 (shoot at)
+
+Language material: X Aux kpàdɛ̀ tò Y mà
+
+- construction type: X Aux N V Y Ad
+- adposition: mà
+- verb: kpàdɛ̀ tò
+- verb meaning: gun drop
+- adpositional etymology: postposition-on-1-ma
+- verb etymology: stand (to)-1-d'o
+
+## Data
+
+```{r}
+library(inspectdf)
+df |> 
+  select(-color, -latitude, -longitude, -composite_construction) |> 
+  # for some reason `inspectdf` doesn't work with the verb column, next line 
+  # converts it to unique integer in order to overcome this problem
+  mutate(verb = as.double(factor(verb))) |> 
+  mutate_all(as.character) |> 
+  rename(`01. number` = number,
+         `02. stimulus_predicate` = stimulus_predicate,
+         `03. construction` = construction,
+         `04. construction type` = construction_type,
+         `05. adposition` = adposition,
+         `06. adposition etymology` = adposition_etymology,
+         `07. verb` = verb,
+         `08. verb meaning` = verb_meaning,
+         `09. verb etymology` = verb_etymology,
+         `10. language` = language,
+         `11. glottocode` = glottocode) |> 
+  inspect_cat() |> 
+  show_plot() +
+  labs(title = NULL, subtitle = NULL) + 
+  theme(axis.text.y = element_text(hjust = 0))
+```
+
+# Methods
+
+## Methods: variables
+
+We run clustering of lects for all annotated variables: 
+
+- construction type
+- adposition
+- verb
+- complex verb meaning
+- adpositional etymology
+- verb etymology 
+
+## Methods: coding
+
+We applied agglomerative hierarchical clustering [@everitt11: 71--110; @zepeda13]. Within each stimulus, we defined the range of values
+attested in languages and converted it to a table that coded the presence or absence of the value in each language. Here is the table that represents the coding of construction types for the analysis of stimulus 1 ‘hurt’:
+
+\small
+
+```{r}
+df |> 
+  filter(number == 1) |> 
+  mutate(construction_type = str_c("`", construction_type, "`"),
+         value = 1) |> 
+  select(construction_type, language, value) |> 
+  pivot_wider(names_from = language, values_from = value, values_fill = 0) |> 
+  rename(`Construction type` = construction_type)
+```
+
+## Methods: distance
+
+In order to run the hierarchical clustering we calculate the distance matrix using Jaccard distance [@jaccard12; @fletcher18]. For each pair of languages it calculates pairwise ratio of shared values between two languages except the cases, when the value is absent in both languages. This can be formulated with the following formula:
+
+$$Jaccard(A, B) = 1 − \frac{|A ∩ B|}{|A ∪ B|}$$
+
+```{r}
+df |> 
+  filter(number == 1) |> 
+  mutate(construction_type = str_c("`", construction_type, "`"),
+         value = 1) |> 
+  select(construction_type, language, value) |> 
+  pivot_wider(names_from = language, values_from = value, values_fill = 0) |> 
+  select(-construction_type) |> 
+  t() |> 
+  dist(method = "binary")
+```
+
+## Some languages have more equivalents than others
+
+- Comparison with all stimuli
+- Comparison with common stimuli (84 out of 125)
+- Comparison with common stimuli and random equivalents
 
 # Results
 
-# Conclussion
+## Construction type
+
+```{r}
+library(tidytext)
+df |> 
+  count(language, construction_type) |> 
+  group_by(language) |> 
+  arrange(desc(n)) |> 
+  slice_head(n = 7) |> 
+  mutate(construction_type = reorder_within(construction_type, n, language)) |> 
+  ggplot(aes(n, construction_type))+
+  geom_col()+
+  facet_wrap(~language, scales = "free")+
+  scale_y_reordered()+
+  labs(x = "", y = "")
+```
+
+## Construction type: all stimuli
+
+```{r}
+suppressPackageStartupMessages(library(ape))
+
+df |> 
+  distinct(language, color) ->
+  colors
+
+df |> 
+  mutate(value = 1) |> 
+  distinct(number, language, construction_type, value) |> 
+  pivot_wider(names_from = language, values_from = value, values_fill = 0) |> 
+  select(-number, -construction_type) |> 
+  t() |> 
+  dist(method = "binary") |> 
+  hclust(method = "average") |> 
+  as.phylo()  %>%
+  plot(tip.color = colors$color[match(.$tip.label, colors$language)],
+       direction = "downwards",
+       cex = 2.5, 
+       font = 2)
+```
+
+## Construction type: common stimuli
+
+```{r}
+df |> 
+  distinct(number, stimulus_predicate, language) |> 
+  count(number, stimulus_predicate) |> 
+  filter(n == 7) |> 
+  pull(number) ->
+  common_stimuli
+
+df |> 
+  filter(number %in% common_stimuli) |> 
+  mutate(value = 1) |> 
+  distinct(number, language, construction_type, value) |> 
+  pivot_wider(names_from = language, values_from = value, values_fill = 0) |> 
+  select(-number, -construction_type) |> 
+  t() |> 
+  dist(method = "binary") |> 
+  hclust(method = "average") |> 
+  as.phylo()  %>%
+  plot(tip.color = colors$color[match(.$tip.label, colors$language)],
+       direction = "downwards",
+       cex = 2.5, 
+       font = 2)
+```
+
+## Simple verb etymologies: all stimuli
+
+```{r}
+df |> 
+  filter(verb_etymology != "0",
+         is.na(verb_meaning)) |> 
+  mutate(value = 1) |> 
+  distinct(number, language, verb_etymology, value) |> 
+  pivot_wider(names_from = language, values_from = value, values_fill = 0) |> 
+  select(-number, -verb_etymology) |> 
+  t() |> 
+  dist(method = "binary") |> 
+  hclust(method = "average") |> 
+  as.phylo()  %>%
+  plot(tip.color = colors$color[match(.$tip.label, colors$language)],
+       direction = "downwards",
+       cex = 2.5, 
+       font = 2)
+```
+
+## Simple verb etymologies: common stimuli
+
+```{r}
+df |> 
+  filter(number %in% common_stimuli) |>
+  filter(verb_etymology != "0",
+         is.na(verb_meaning)) |> 
+  mutate(value = 1) |> 
+  distinct(number, language, verb_etymology, value) |> 
+  pivot_wider(names_from = language, values_from = value, values_fill = 0) |> 
+  select(-number, -verb_etymology) |> 
+  t() |> 
+  dist(method = "binary") |> 
+  hclust(method = "average") |> 
+  as.phylo()  %>%
+  plot(tip.color = colors$color[match(.$tip.label, colors$language)],
+       direction = "downwards",
+       cex = 2.5, 
+       font = 2)
+```
+
+## Adpositional etymologies: all stimuli
+
+```{r}
+df |> 
+  filter(adposition_etymology != "0") |> 
+  mutate(value = 1) |> 
+  distinct(number, language, adposition_etymology, value) |> 
+  pivot_wider(names_from = language, values_from = value, values_fill = 0) |> 
+  select(-number, -adposition_etymology) |> 
+  t() |> 
+  dist(method = "binary") |> 
+  hclust(method = "average") |> 
+  as.phylo()  %>%
+  plot(tip.color = colors$color[match(.$tip.label, colors$language)],
+       direction = "downwards",
+       cex = 2.5, 
+       font = 2)
+```
+
+## Adpositional etymologies: common stimuli
+
+```{r}
+df |> 
+  filter(number %in% common_stimuli) |>
+  filter(adposition_etymology != "0") |> 
+  mutate(value = 1) |> 
+  distinct(number, language, adposition_etymology, value) |> 
+  pivot_wider(names_from = language, values_from = value, values_fill = 0) |> 
+  select(-number, -adposition_etymology) |> 
+  t() |> 
+  dist(method = "binary") |> 
+  hclust(method = "average") |> 
+  as.phylo()  %>%
+  plot(tip.color = colors$color[match(.$tip.label, colors$language)],
+       direction = "downwards",
+       cex = 2.5, 
+       font = 2)
+```
+
+
+## Complex verb semantics: example 20 'milk'
+
+```{r}
+df |> 
+  filter(number == 20) |> 
+  select(language, verb_meaning) |> 
+  mutate(verb_meaning = ifelse(is.na(verb_meaning), "", verb_meaning)) |> 
+  rename(`Verb meaning` = verb_meaning)
+```
+
+```{r}
+df |> 
+  mutate(verb_meaning = str_split(verb_meaning, " ")) |> 
+  unnest_longer(verb_meaning) |>
+  mutate(value = 1) |> 
+  distinct(number, language, verb_meaning, value) |> 
+  pivot_wider(names_from = language, values_from = value, values_fill = 0) |> 
+  na.omit() |> 
+  filter(number %in% 20) |> 
+  rename(Number = number,
+         `Verb meaning` = verb_meaning) |> 
+  select(Number, `Verb meaning`, Bamana, Guro, `Dan Gweetaa`, Mano, Kpelle, Kono, Looma)
+```
+
+## Complex verb semantics: all stimuli
+
+```{r}
+df |> 
+  select(number, language, verb_meaning) |> 
+  na.omit() |> 
+  mutate(verb_meaning = str_split(verb_meaning, " ")) |> 
+  unnest_longer(verb_meaning) |>
+  distinct(number, language, verb_meaning) |> 
+  mutate(number = str_c(number, "_", verb_meaning),
+         value = 1) |> 
+  select(-verb_meaning) |> 
+  pivot_wider(names_from = language, values_from = value, values_fill = 0) |> 
+  select(-number) |> 
+  t() |> 
+  dist(method = "binary") |> 
+  hclust(method = "average") |> 
+  as.phylo()  %>%
+  plot(tip.color = colors$color[match(.$tip.label, colors$language)],
+       direction = "downwards",
+       cex = 2.5, 
+       font = 2)
+```
+
+## Complex verb semantics: common stimuli
+
+```{r}
+df |> 
+  filter(number %in% common_stimuli) |>
+  select(number, language, verb_meaning) |> 
+  na.omit() |> 
+  mutate(verb_meaning = str_split(verb_meaning, " ")) |> 
+  unnest_longer(verb_meaning) |>
+  distinct(number, language, verb_meaning) |> 
+  mutate(number = str_c(number, "_", verb_meaning),
+         value = 1) |> 
+  select(-verb_meaning) |> 
+  pivot_wider(names_from = language, values_from = value, values_fill = 0) |> 
+  select(-number) |> 
+  t() |> 
+  dist(method = "binary") |> 
+  hclust(method = "average") |> 
+  as.phylo()  %>%
+  plot(tip.color = colors$color[match(.$tip.label, colors$language)],
+       direction = "downwards",
+       cex = 2.5, 
+       font = 2)
+```
+
+# Conclussions
+
+## Conclussions
+
+- construction type: contact plays a greater role
+- verb etymology: inheritance plays a greater role
+- adpositional etymology: contact plays a greater role
+- complex verb: contact plays a greater role
+
+. . .
+
+- Can number of tokens play any role?
+- It is possible that if the procedure of data collection was more unified the result was slightly different.
+
+## Conclussions
+
+Typical valency pattern types (such as “transitive” and “intransitive” are known to be prone to contact influence [@say18; @shagal20]. Although we use more fine-grained distinctions of construction types than “transitive” and “intransitive”, our observations present evidence of a comparable kind.
+
+The choice of adposition is arguably prone to contact influence and pattern-borrowing, not unlike case marking [@servzant15; @meakins20].
+
+Finally, the structure of complex verbs is also highly borrowable as it can be compared to calquing in lexicon [@thomason01] which, in fact, often accompanies grammatical pattern-borrowing [@ross07].
 
 # References {.allowframebreaks}
