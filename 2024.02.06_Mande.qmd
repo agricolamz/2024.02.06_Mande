@@ -1,0 +1,79 @@
+---
+title: "Valency patterns in Mande: contact vs inheritance"
+author: 
+  - Maria Khachaturyan
+  - Valentin Vydrin
+  - Maria Konoshenko
+  - George Moroz
+date: "02/06/2024"
+date-format: "D.MM.YYYY"
+format: 
+  beamer:
+    theme: Singapore
+    mainfont: Brill
+    monofont: Iosevka
+    df-print: kable
+    pdf-engine: xelatex
+    cite-method: natbib
+    classoption: t
+    header-includes: |
+       \setbeamertemplate{footline}[page number]
+urlcolor: teal
+citecolor: teal
+bibliography: bibliography.bib
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| include: false
+library(tidyverse)
+# setwd("/home/agricolamz/work/materials/2024.02.06_Mande")
+df <- readxl::read_xlsx("data/data.xlsx")
+theme_set(theme_minimal()+theme(text = element_text(size = 14)))
+```
+
+
+# Introduction
+
+# On Mande languages
+
+# Data collection and coding
+
+## Data source
+
+Data were collected with the help of the [BivalTyp](https://bivaltyp.info/) [@saj20] questionnaire focusing on bivalent predicates and containing 130 stimulus sentences. The Russian variant of the questionnaire, which we then translated into French and used in our fieldwork.
+
+. . .
+
+- elicitation 
+    - Kono (Southwestern)
+    - Kpelle (Southwestern)
+    - Mano (Southern)
+- published data based on the questionnaire
+    - Looma (Southwestern) (Mishchenko 2018)
+    - Guro (Southern) [@kuznetsova18; @kuznetsova21]
+    - Dan-Gweetaa (Southern) [@vydrin21]
+    - Bamana (Manding) [@dumestre11; @bailleul11]
+
+## Data
+
+Resulting database does not have exactly 130 equivalents per language:
+
+- some stimulus meanings do not have a straightforward equivalent
+- some pairs of stimuli showed identical equivalents, so we excluded stimuli 112, 114, 122, 125, and 128
+- we collected all equivalent per stimulus predicate
+
+```{r}
+df |> 
+  count(language) |> 
+  arrange(n) |> 
+  rename(`N stimuli` = n)
+```
+
+
+# Results
+
+# Conclussion
+
+# References {.allowframebreaks}
