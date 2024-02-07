@@ -44,7 +44,7 @@ theme_set(theme_minimal()+theme(text = element_text(size = 14)))
 - tonal and fusional morphology, otherwise mainly isolating
 - mainly postpositions; prepositions are rare
 
-## Genetic classification of Mande by [@valentin09]
+## Genetic classification of Mande by [@vydrin09]
 
 ```{r}
 #| out-width: 105%
@@ -67,13 +67,14 @@ tibble(lang = lang.aff("Mande,"),
          branch = str_remove(branch, ","),
          subbranch = str_squish(subbranch),
          branch = str_squish(branch),
-         size = ifelse(lang %in% c("Guro", "Dan", "Guinea Kpelle", "Loma (Liberia)", "Bambara", "Mann"), 6, 3),
-         label = ifelse(lang %in% c("Guro", "Dan", "Guinea Kpelle", "Loma (Liberia)", "Bambara", "Mann"), lang, ""),
+         size = ifelse(lang %in% c("Guro", "Dan", "Kono (Guinea)", "Guinea Kpelle", "Loma (Liberia)", "Bambara", "Mann"), 6, 3),
+         label = ifelse(lang %in% c("Guro", "Dan", "Kono (Guinea)", "Guinea Kpelle", "Loma (Liberia)", "Bambara", "Mann"), lang, ""),
          label = case_when(label == "Bambara" ~ "Bamana",
                            str_detect(label, "Loma") ~ "Looma",
                            str_detect(label, "Dan") ~ "Dan Gweetaa",
                            str_detect(label, "Kpelle") ~ "Kpelle",
                            str_detect(label, "Mann") ~ "Mano",
+                           str_detect(label, "Kono") ~ "Kono",
                            TRUE ~ label)) ->
   mande_languages
 
@@ -108,7 +109,7 @@ knitr::include_graphics("images/01_mande_branches.png")
 knitr::include_graphics("images/02_mande_subbranches.png")
 ```
 
-## Mande languages
+## Languages in the study
 
 ```{r}
 #| out-width: 90%
@@ -213,8 +214,6 @@ df |>
 We run clustering of lects for all annotated variables: 
 
 - construction type
-- adposition
-- verb
 - complex verb meaning
 - adpositional etymology
 - verb etymology 
